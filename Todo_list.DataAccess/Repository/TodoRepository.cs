@@ -5,22 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using Todo_list.DataAccess.Data;
 using Todo_list.DataAccess.Repository.IRepository;
+using Todo_list.Models;
 
 namespace Todo_list.DataAccess.Repository
 {
-    public class UnitOfWork : IUnitOfWork
+    public class TodoRepository : Repository<Todo>, ITodoRepository
     {
-        private ApplicationDbContext _db;
-        public ITodoRepository Todo { get; private set; }
-
-        public UnitOfWork(ApplicationDbContext db)
+        private readonly ApplicationDbContext _db;
+        public TodoRepository(ApplicationDbContext db) : base(db)
         {
             _db = db;
-            Todo = new TodoRepository(_db);
         }
-        public void Save()
+
+        public void Update(Todo obj)
         {
-            _db.SaveChanges();
+            _db.Todos.Update(obj);
         }
     }
 }

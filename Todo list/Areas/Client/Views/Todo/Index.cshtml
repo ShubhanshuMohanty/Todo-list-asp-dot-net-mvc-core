@@ -1,17 +1,13 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model TodoVM
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <h2 class="text-center text-primary mb-4">📝 My ToDo List</h2>
 
             <!-- Create ToDo Form -->
-            <form onsubmit="handleAddTodo(event)">
+            <form method="post">
                 <div class="input-group mb-3">
-                    <input type="text" id="todoInput" class="form-control" placeholder="Enter your task" required>
+                    <input asp-for="NewTodo.Title" type="text" id="todoInput" class="form-control" placeholder="Enter your task" required>
                     <button class="btn btn-success" type="submit">Add</button>
                 </div>
             </form>
@@ -19,15 +15,73 @@
             <!-- Show ToDo List -->
             <ul class="list-group" id="todoList">
                 <!-- Tasks will appear here -->
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <input class="form-control me-2" value="Buy groceries" disabled />
-                    <div class="btn-group">
-                        <button class="btn btn-sm btn-warning" onclick="editTodo(this)">Edit</button>
-                        <button class="btn btn-sm btn-primary d-none" onclick="saveTodo(this)">Save</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteTodo(this)">Delete</button>
-                    </div>
-                </li>
+                @foreach(var todo in Model.TodoList)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <input value="@todo.Id" hidden />
+                        <input class="form-control me-2" value="@todo.Title" disabled />
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-warning" onclick="editTodo(this)">Edit</button>
+                            <button class="btn btn-sm btn-primary d-none" onclick="saveTodo(this)">Save</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteTodo(this,@todo.Id)">Delete</button>
+                        </div>
+                    </li>
+                }
             </ul>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function editTodo(button) {
+            const listItem = button.closest('li');
+            const input = listItem.querySelector('input');
+            input.disabled = false;
+            input.focus();
+            button.classList.add('d-none');
+            listItem.querySelector('.btn-primary').classList.remove('d-none');
+        }
+        async function saveTodo(button) {
+            const listItem = button.closest('li');
+            const inputs = listItem.querySelectorAll('input');
+            const id = parseInt(inputs[0].value); // first input = hidden ID
+            const title = inputs[1].value; // second input = editable title
+
+            let res = await fetch('/Client/Todo/UpdateTodo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: id,
+                    title: title
+                })
+            });
+
+            if (res.ok) {
+                console.log('Updated successfully');
+                inputs[1].disabled = true;
+
+                // Toggle buttons
+                button.classList.add('d-none'); // Hide Save
+                listItem.querySelector('.btn-warning').classList.remove('d-none'); // Show Edit
+            } else {
+                console.error('Update failed');
+            }
+        }
+        async function deleteTodo(button,id) {
+            console.log("Deleting:", id);
+            let res = await fetch('/Client/Todo/Delete?id=' + id, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                const listItem = button.closest('li');
+                listItem.remove();
+            } else {
+                console.error("Failed to delete:", await res.text());
+            }
+        }
+    </script>
+}

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Todo_list.Models;
 
 namespace Todo_list.DataAccess.Repository.IRepository
 {
-    public interface IUnitOfWork
+    public interface ITodoRepository : IRepository<Todo>
     {
-        ITodoRepository Todo { get; }
-        void Save();
+        void Update(Todo obj);
     }
 }

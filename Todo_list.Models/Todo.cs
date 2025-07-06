@@ -15,7 +15,7 @@ namespace Todo_list.Models
         [Display(Name = "Todo Title")]
         public string Title { get; set; }
 
-        public bool IsCompleted { get; set; }
+        public bool IsCompleted { get; set; }=false;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     }
