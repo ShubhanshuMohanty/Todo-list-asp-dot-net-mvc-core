@@ -17,11 +17,12 @@
                 <!-- Tasks will appear here -->
                 @foreach(var todo in Model.TodoList)
                 {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <li class="list-group-item d-flex justify-content-between align-items-center ">
+                        <input type="checkbox" class="form-check-input me-2 " @(todo.IsCompleted ? "checked" : "") onclick="saveTodo(this)">
                         <input value="@todo.Id" hidden />
-                        <input class="form-control me-2" value="@todo.Title" disabled />
+                        <input class="form-control me-2 @(todo.IsCompleted ? "bg-success" : "")" value="@todo.Title" disabled id="todotitle" />
                         <div class="btn-group">
-                            <button class="btn btn-sm btn-warning" onclick="editTodo(this)">Edit</button>
+                            <button class="btn btn-sm btn-warning @(todo.IsCompleted ? "d-none" : "")" onclick="editTodo(this)">Edit</button>
                             <button class="btn btn-sm btn-primary d-none" onclick="saveTodo(this)">Save</button>
                             <button class="btn btn-sm btn-danger" onclick="deleteTodo(this,@todo.Id)">Delete</button>
                         </div>
@@ -36,7 +37,7 @@
     <script>
         function editTodo(button) {
             const listItem = button.closest('li');
-            const input = listItem.querySelector('input');
+            const input = listItem.querySelectorAll("input")[2];
             input.disabled = false;
             input.focus();
             button.classList.add('d-none');
@@ -45,27 +46,33 @@
         async function saveTodo(button) {
             const listItem = button.closest('li');
             const inputs = listItem.querySelectorAll('input');
-            const id = parseInt(inputs[0].value); // first input = hidden ID
-            const title = inputs[1].value; // second input = editable title
-
-            let res = await fetch('/Client/Todo/UpdateTodo', {
-                method: 'POST',
+            const check=inputs[0].checked; // checkbox input
+            const id = parseInt(inputs[1].value); // first input = hidden ID
+            const title = inputs[2].value; // second input = editable title
+            console.log("Saving:", id, title,check);
+            let res = await fetch('/Client/Todo/Update/', {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     id: id,
-                    title: title
+                    title: title,
+                    isCompleted: check 
                 })
             });
 
             if (res.ok) {
                 console.log('Updated successfully');
-                inputs[1].disabled = true;
-
+                inputs[2].disabled = true;
+                if(check)
+                {
+                    inputs[2].classList.add('bg-success')
+                }
                 // Toggle buttons
-                button.classList.add('d-none'); // Hide Save
-                listItem.querySelector('.btn-warning').classList.remove('d-none'); // Show Edit
+                listItem.querySelector('.btn-warning').classList.add('d-none'); // Hide Save
+                listItem.querySelector('.btn-primary').classList.add('d-none'); // Show Edit
+
             } else {
                 console.error('Update failed');
             }

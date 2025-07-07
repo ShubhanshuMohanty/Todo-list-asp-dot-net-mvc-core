@@ -46,7 +46,7 @@ namespace Todo_list.Areas.Client.Controllers
                     try
                     {
                         todoFromDb.Title= todo.Title;
-                        //todoFromDb.IsCompleted = todo.IsCompleted;
+                        todoFromDb.IsCompleted = todo.IsCompleted;
                         _unitOfWork.Todo.Update(todoFromDb);
                         _unitOfWork.Save();
                         return Json(new { data = "update" });
